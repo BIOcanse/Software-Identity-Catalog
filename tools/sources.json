@@ -6,8 +6,8 @@
   },
   "discord": {
     "revision": {
-      "fetched": "2026-10-30T20:32:34Z",
-      "responseSha256": "bdd3dff9f75a294dc113240669b9bbe96f7a486ab63761b508c9fa87b6979af6"
+      "fetched": "2026-10-30T20:41:49Z",
+      "responseSha256": "6eeadd36c4f2b54a4efa49407d11fa90309ee1294fa5aec2038a731eaa7244d6"
     },
     "url": "https://discord.com/api/v9/applications/detectable"
   },
