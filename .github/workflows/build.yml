@@ -1,0 +1,114 @@
+name: Build catalog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 4 * * 1"  # every Monday, 04:23 UTC
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-catalog
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Each importer keeps its previous records and exits non-zero when its
+      # source fails. The build continues; the failure goes into the manifest.
+      - name: Run importers
+        id: import
+        run: |
+          failed=""
+          for source in winget scoop discord; do
+            if ! python "tools/import_${source}.py"; then
+              failed="${failed:+$failed,}$source"
+            fi
+          done
+          echo "failed=$failed" >> "$GITHUB_OUTPUT"
+
+      # catalog-YYYY.MM.DD for the first build of a day; the Nth build that day
+      # gets catalog-YYYY.MM.DD.N.
+      - name: Choose version
+        id: version
+        run: |
+          day="$(date -u +%Y.%m.%d)"
+          count="$(git ls-remote --tags origin "refs/tags/catalog-${day}*" \
+            | sed 's#.*refs/tags/##' | grep -E "^catalog-${day//./\\.}(\.[0-9]+)?$" | wc -l)"
+          if [ "$count" -eq 0 ]; then version="$day"; else version="$day.$((count + 1))"; fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        env:
+          CATALOG_CREATED: ${{ steps.version.outputs.created }}
+          CATALOG_VERSION: ${{ steps.version.outputs.version }}
+          CATALOG_FAILED_SOURCES: ${{ steps.import.outputs.failed }}
+        run: python tools/build.py
+
+      - name: Validate
+        run: python tools/validate.py
+
+      - name: Commit changed data
+        id: commit
+        env:
+          BOT_ID: "41898282"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "${BOT_ID}+github-actions[bot]@users.noreply.github.com"
+          git add data tools/sources.json
+          if git diff --cached --quiet -- data; then data_changed=false; else data_changed=true; fi
+          if ! git diff --cached --quiet; then
+            git commit -m "Update catalog data ${{ steps.version.outputs.version }}"
+            git push
+          fi
+          echo "data_changed=$data_changed" >> "$GITHUB_OUTPUT"
+
+      # The manifest is signed with the ECDSA P-256 key in the MANIFEST_SIGNING_KEY secret and checked against
+      # keys/manifest-signing.pub.pem before anything is published. Without the secret there is no release.
+      - name: Sign manifest
+        if: steps.commit.outputs.data_changed == 'true'
+        env:
+          MANIFEST_SIGNING_KEY: ${{ secrets.MANIFEST_SIGNING_KEY }}
+        run: |
+          if [ -z "$MANIFEST_SIGNING_KEY" ]; then echo "::error::MANIFEST_SIGNING_KEY is not set"; exit 1; fi
+          key="$(mktemp)"
+          trap 'rm -f "$key"' EXIT
+          printf '%s\n' "$MANIFEST_SIGNING_KEY" > "$key"
+          openssl dgst -sha256 -sign "$key" -out dist/manifest.json.sig dist/manifest.json
+          openssl dgst -sha256 -verify keys/manifest-signing.pub.pem -signature dist/manifest.json.sig dist/manifest.json
+
+      # A release is published only when a record changed (design section 5).
+      - name: Publish release
+        if: steps.commit.outputs.data_changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          FAILED: ${{ steps.import.outputs.failed }}
+        run: |
+          notes="Catalog ${VERSION}. Source revisions are in manifest.json; sources are listed in SOURCES.md."
+          if [ -n "$FAILED" ]; then notes="$notes Failed imports kept their previous records: ${FAILED}."; fi
+          gh release create "catalog-${VERSION}" \
+            dist/catalog-open.json dist/catalog-discord.json dist/manifest.json dist/manifest.json.sig \
+            --target "$(git rev-parse HEAD)" \
+            --title "catalog-${VERSION}" \
+            --notes "$notes"
+
+      - name: Report failed importers
+        if: steps.import.outputs.failed != ''
+        env:
+          FAILED: ${{ steps.import.outputs.failed }}
+        run: |
+          echo "Failed importers (previous records kept): $FAILED" >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::Failed importers: $FAILED"
+          exit 1

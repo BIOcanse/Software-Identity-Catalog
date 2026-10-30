@@ -1,0 +1,46 @@
+{
+  "curated": {
+    "revision": {
+      "maintained": "by hand in this repository; entriesSha256 identifies the content"
+    }
+  },
+  "discord": {
+    "revision": {
+      "fetched": "2026-10-30T20:32:34Z",
+      "responseSha256": "bdd3dff9f75a294dc113240669b9bbe96f7a486ab63761b508c9fa87b6979af6"
+    },
+    "url": "https://discord.com/api/v9/applications/detectable"
+  },
+  "scoop": {
+    "revision": {
+      "buckets": {
+        "extras": {
+          "commit": "f34928ab052ee58aee2305ff60be9df86cccf0e1",
+          "repository": "ScoopInstaller/Extras"
+        },
+        "games": {
+          "commit": "ec44006a9f0f2ff595e3c1ad70c704b9226aa944",
+          "repository": "ScoopInstaller/Games"
+        },
+        "main": {
+          "commit": "4a75fe45286136ecd3d1c1f26d4b4b23f05d0658",
+          "repository": "ScoopInstaller/Main"
+        },
+        "versions": {
+          "commit": "4c2d5537dbcbb0456092034ae1ec60e5409d8926",
+          "repository": "ScoopInstaller/Versions"
+        }
+      }
+    }
+  },
+  "winget": {
+    "revision": {
+      "databaseIdentifier": "{43EFAB06-C6EF-49E2-AB0F-7EF010DAD9D3}",
+      "lastWriteTime": "2026-10-30T19:36:45Z",
+      "lastWriteTimeRaw": "1793389005",
+      "msixSha256": "10bf95203edbe630e5c0b3c5e491891ff2a2e4b5f75f66b5b010f5f91bb622cb",
+      "schemaVersion": "1.7"
+    },
+    "url": "https://cdn.winget.microsoft.com/cache/source.msix"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:software-identity-catalog:schema:record",
+  "title": "Software identity record",
+  "description": "One piece of software as one source sees it (docs/design.md section 2). Rules JSON Schema cannot state are checked by tools/validate.py: every list is sorted, ids are sorted and unique within a file, the id prefix names the file's source, and `evidence` appears only on curated records.",
+  "$ref": "#/$defs/record",
+  "$defs": {
+    "entriesFile": {
+      "description": "data/<source>/entries.json",
+      "type": "object",
+      "required": ["source", "entries"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {"$ref": "#/$defs/sourceName"},
+        "entries": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+      }
+    },
+    "sourceName": {
+      "type": "string",
+      "enum": ["curated", "winget", "scoop", "discord", "pcgamingwiki"]
+    },
+    "record": {
+      "type": "object",
+      "required": ["id", "name", "keys"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "<source>:<native id>",
+          "type": "string",
+          "pattern": "^(curated|winget|scoop|discord|pcgamingwiki):[^\\s].*$"
+        },
+        "name": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "enum": ["game", "application", "windows-component", "windows-service"]},
+        "tags": {"$ref": "#/$defs/stringList"},
+        "keys": {"$ref": "#/$defs/keys"},
+        "homepage": {"type": "string", "pattern": "^https?://"},
+        "evidence": {"description": "Curated records only: how the entry was checked.", "type": "string", "minLength": 1}
+      }
+    },
+    "keys": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "steamAppIds": {"$ref": "#/$defs/positiveIntegerList"},
+        "xboxIds": {"$ref": "#/$defs/stringList"},
+        "epicIds": {"$ref": "#/$defs/stringList"},
+        "gogIds": {"$ref": "#/$defs/stringList"},
+        "uplayIds": {"$ref": "#/$defs/stringList"},
+        "battlenetIds": {"$ref": "#/$defs/stringList"},
+        "microsoftStoreIds": {"$ref": "#/$defs/stringList"},
+        "wingetIds": {"$ref": "#/$defs/stringList"},
+        "scoopIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z0-9._-]+/[^/\\s][^/]*$"}
+        },
+        "discordIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[0-9]+$"}
+        },
+        "productCodes": {"$ref": "#/$defs/guidList"},
+        "upgradeCodes": {"$ref": "#/$defs/guidList"},
+        "packageFamilyNames": {"$ref": "#/$defs/stringList"},
+        "executables": {"$ref": "#/$defs/stringList"},
+        "executablePaths": {
+          "description": "Relative path suffixes with forward slashes.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[^\\\\]+$"}
+        },
+        "launcherExecutables": {"$ref": "#/$defs/stringList"},
+        "installedNames": {"$ref": "#/$defs/stringList"},
+        "productNames": {"$ref": "#/$defs/stringList"},
+        "shortcutNames": {"$ref": "#/$defs/stringList"},
+        "uninstallKeys": {
+          "description": "Apps and Features key names of non-MSI installers, for example {GUID}_is1. Weak evidence.",
+          "$ref": "#/$defs/stringList"
+        },
+        "commands": {"$ref": "#/$defs/stringList"},
+        "monikers": {"$ref": "#/$defs/stringList"},
+        "aliases": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "stringList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "positiveIntegerList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "integer", "minimum": 1}
+    },
+    "guidList": {
+      "description": "MSI codes, uppercase with braces.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^\\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\\}$"}
+    }
+  }
+}
