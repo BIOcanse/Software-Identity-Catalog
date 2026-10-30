@@ -2,6 +2,11 @@ name: Build catalog
 
 on:
   workflow_dispatch:
+    inputs:
+      release:
+        description: "Publish a release even when no record changed (for example the first release)"
+        type: boolean
+        default: false
   schedule:
     - cron: "23 4 * * 1"  # every Monday, 04:23 UTC
 
@@ -77,7 +82,7 @@ jobs:
       # The manifest is signed with the ECDSA P-256 key in the MANIFEST_SIGNING_KEY secret and checked against
       # keys/manifest-signing.pub.pem before anything is published. Without the secret there is no release.
       - name: Sign manifest
-        if: steps.commit.outputs.data_changed == 'true'
+        if: steps.commit.outputs.data_changed == 'true' || inputs.release
         env:
           MANIFEST_SIGNING_KEY: ${{ secrets.MANIFEST_SIGNING_KEY }}
         run: |
@@ -88,9 +93,9 @@ jobs:
           openssl dgst -sha256 -sign "$key" -out dist/manifest.json.sig dist/manifest.json
           openssl dgst -sha256 -verify keys/manifest-signing.pub.pem -signature dist/manifest.json.sig dist/manifest.json
 
-      # A release is published only when a record changed (design section 5).
+      # A release is published when a record changed (design section 5), or when a manual run asks for one.
       - name: Publish release
-        if: steps.commit.outputs.data_changed == 'true'
+        if: steps.commit.outputs.data_changed == 'true' || inputs.release
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
