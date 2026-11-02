@@ -6,8 +6,8 @@
   },
   "discord": {
     "revision": {
-      "fetched": "2026-10-30T20:43:29Z",
-      "responseSha256": "bdd3dff9f75a294dc113240669b9bbe96f7a486ab63761b508c9fa87b6979af6"
+      "fetched": "2026-11-02T12:34:34Z",
+      "responseSha256": "53f7476aeb2e485f0f5c66c849de7422a183d8b12fc3595d1ce183418c9489d4"
     },
     "url": "https://discord.com/api/v9/applications/detectable"
   },
@@ -15,19 +15,19 @@
     "revision": {
       "buckets": {
         "extras": {
-          "commit": "f34928ab052ee58aee2305ff60be9df86cccf0e1",
+          "commit": "d4fe349a46ab374edd4aceb191b08fbddf9f6413",
           "repository": "ScoopInstaller/Extras"
         },
         "games": {
-          "commit": "ec44006a9f0f2ff595e3c1ad70c704b9226aa944",
+          "commit": "3aa1d7a9e623bdf4802527486f0cd7c62c8cca6c",
           "repository": "ScoopInstaller/Games"
         },
         "main": {
-          "commit": "4a75fe45286136ecd3d1c1f26d4b4b23f05d0658",
+          "commit": "fb98793a0ef7a148b631c0f26cbc7c66240a9301",
           "repository": "ScoopInstaller/Main"
         },
         "versions": {
-          "commit": "4c2d5537dbcbb0456092034ae1ec60e5409d8926",
+          "commit": "86191f9cf483df2c0ef0c752ee4d2eaeb9fe40bf",
           "repository": "ScoopInstaller/Versions"
         }
       }
@@ -36,9 +36,9 @@
   "winget": {
     "revision": {
       "databaseIdentifier": "{43EFAB06-C6EF-49E2-AB0F-7EF010DAD9D3}",
-      "lastWriteTime": "2026-10-30T19:36:45Z",
-      "lastWriteTimeRaw": "1793389005",
-      "msixSha256": "10bf95203edbe630e5c0b3c5e491891ff2a2e4b5f75f66b5b010f5f91bb622cb",
+      "lastWriteTime": "2026-11-02T11:04:09Z",
+      "lastWriteTimeRaw": "1793617449",
+      "msixSha256": "705fadf022dada150d7d221bdf2cba871558701f5dea2714db6ce3daa28c04f3",
       "schemaVersion": "1.7"
     },
     "url": "https://cdn.winget.microsoft.com/cache/source.msix"
